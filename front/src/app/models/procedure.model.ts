@@ -6,7 +6,8 @@ export interface ProcedurePaa {
   description: string;
   deadlineEstime: string;
   montant: number;
-  // paaId: number;
-  paa: any; 
-  verdicts?: any[]; 
+  pathInitialProcedure: string;
+  pathBesoin: string;
+  paa: { id: number };
+  verdicts?: any[];
 }

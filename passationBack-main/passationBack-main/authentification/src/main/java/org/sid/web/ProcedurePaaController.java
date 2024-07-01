@@ -3,15 +3,9 @@ package org.sid.web;
 import java.util.List;
 import java.util.Optional;
 
-import org.sid.dao.planRepository;
 import org.sid.entites.ProcedurePaa;
-import org.sid.entites.plan_anuell_achat;
-import org.sid.entites.DTO.ProcedureRequest;
 import org.sid.services.ProcedurePaaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.query.Procedure;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +18,7 @@ public class ProcedurePaaController {
     @Autowired
     private ProcedurePaaService service;
 
-    @Autowired
-    planRepository paaRepository;
-
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = "application/json")
     public List<ProcedurePaa> getAll() {
         return service.findAll();
     }
@@ -38,21 +29,22 @@ public class ProcedurePaaController {
         return procedurePaa.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("")
+    @PostMapping(consumes = { "multipart/form-data" })
     public ProcedurePaa create(
             @RequestPart("procedure") ProcedurePaa procedureRequest,
             @RequestPart("file") MultipartFile file) {
-
         return service.createProcedure(procedureRequest, file);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ProcedurePaa> update(@PathVariable Integer id, @RequestBody ProcedurePaa procedurePaa) {
-        Optional<ProcedurePaa> existingProcedurePaa = service.findById(id);
-        if (existingProcedurePaa.isPresent()) {
-            procedurePaa.setId(id);
-            return ResponseEntity.ok(service.save(procedurePaa));
-        } else {
+    @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
+    public ResponseEntity<ProcedurePaa> update(
+            @PathVariable Integer id,
+            @RequestPart("procedure") ProcedurePaa procedureRequest,
+            @RequestPart("file") MultipartFile file) {
+        try {
+            ProcedurePaa updatedProcedure = service.updateProcedure(id, procedureRequest, file);
+            return ResponseEntity.ok(updatedProcedure);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
     }
@@ -62,11 +54,4 @@ public class ProcedurePaaController {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
-    // @PostMapping()
-
-    // public ProcedurePaa createprocedure(@RequestBody Integer Idpaa , @RequestBody
-    // String origin, @RequestBody Double montant ) {
-
-    // }
 }

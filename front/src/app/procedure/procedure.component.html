@@ -1,38 +1,113 @@
-
 <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>LISTES DES PROCEDURES</h1>
-          </div>
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-3">
+        <div class="col-sm-6">
+          <h4>Gestion des Procédures</h4>
         </div>
-      </div> 
-      <div class="container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Origin</th>
-              <th>Destinataire</th>
-              <th>Source Financière</th>
-              <th>Description</th>
-              <th>Deadline Estimé</th>
-              <th>Montant</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let procedure of procedures">
-              <td>{{ procedure.origin }}</td>
-              <td>{{ procedure.destinataire }}</td>
-              <td>{{ procedure.sourceFinanciere }}</td>
-              <td>{{ procedure.description }}</td>
-              <td>{{ procedure.deadlineEstime | date }}</td>
-              <td>{{ procedure.montant }}</td>
-             
-            </tr>
-          </tbody>
-        </table>
       </div>
-    </section>
-  </div>
-  
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content: Dialog for Adding/Editing Procedures -->
+  <section class="content">
+    <div class="container-fluid">
+      <ejs-dialog *ngIf="isVisible" id='dialog' isModal='true' [position]='positionModal' #ejDialog header="Détails de la procédure"
+                  showCloseIcon='true' allowDragging='true' [target]='targetElement' width='560px' height="auto">
+        <ng-template #content>
+          <form [formGroup]="procedureForm" (ngSubmit)="onSubmit()" class="form-horizontal">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="deadline_estime">Deadline Estimé:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="deadline_estime" placeholder="Entrer le deadline estimé" formControlName="deadlineEstime">
+                <div *ngIf="procedureForm.get('deadlineEstime').touched && procedureForm.get('deadlineEstime').invalid" class="text-danger">
+                  Deadline Estimé est requis.
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="description">Description:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="description" placeholder="Entrer la description" formControlName="description">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="destinataire">Destinataire:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="destinataire" placeholder="Entrer le destinataire" formControlName="destinataire">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="montant">Montant:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="montant" placeholder="Entrer le montant" formControlName="montant">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="origin">Origine:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="origin" placeholder="Entrer l'origine" formControlName="origin">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="source_financiere">Source Financière:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="source_financiere" placeholder="Entrer la source financière" formControlName="sourceFinanciere">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="file">Fichier:</label>
+              <div class="col-sm-10">
+                <input type="file" class="form-control" id="file" (change)="selectFile($event)">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label" for="paaid">PAA ID:</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="paaid" placeholder="Entrer le PAA ID" formControlName="paa">
+                <div *ngIf="procedureForm.get('paa').touched && procedureForm.get('paa').invalid" class="text-danger">
+                  PAA ID est requis.
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ejs-dialog>
+    </div>
+  </section>
+
+  <!-- Grid Section for Displaying Procedures -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row justify-content-center mt-3">
+        <div class="col-auto">
+          <button *ngIf="selectedProcedure" (click)="triggerAddEdit(false, selectedProcedure)" class="btn btn-sm btn-outline-primary">
+            Modifier
+          </button>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <ejs-grid #grid (rowSelected)="rowSelected($event)" (rowDeselected)="rowDeselected($event)"
+                  [dataSource]="procedures" id="gridcomp" allowSorting="true"
+                  [allowPaging]="true" height="350" gridLines="Both" [pageSettings]="pageSettings">
+          <e-columns>
+            <e-column field="id" headerText="ID" textAlign="Center" width="100"></e-column>
+            <e-column field="deadlineEstime" headerText="Deadline Estimé" textAlign="Center" width="200"></e-column>
+            <e-column field="description" headerText="Description" textAlign="Center" width="300"></e-column>
+            <e-column field="destinataire" headerText="Destinataire" textAlign="Center" width="200"></e-column>
+            <e-column field="montant" headerText="Montant" textAlign="Center" width="150"></e-column>
+            <e-column field="origin" headerText="Origine" textAlign="Center" width="150"></e-column>
+            <e-column field="sourceFinanciere" headerText="Source Financière" textAlign="Center" width="200"></e-column>
+            <e-column field="paa.id" headerText="PAA ID" textAlign="Center" width="100"></e-column>
+          </e-columns>
+        </ejs-grid>
+      </div>
+    </div>
+  </section>
+</div>

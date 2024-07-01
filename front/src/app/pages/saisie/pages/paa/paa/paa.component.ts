@@ -1,35 +1,33 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-// import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
-import {GridComponent, RowDeselectEventArgs, RowSelectEventArgs} from "@syncfusion/ej2-angular-grids";
-import {PaaService} from "../../../../../services/paa.service";
-import {DialogComponent, PositionDataModel} from '@syncfusion/ej2-angular-popups';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {FileService} from "../../../../../services/file.service";
-import {HttpClient, HttpEventType, HttpHeaders, HttpResponse} from '@angular/common/http';
-import {Observable} from 'rxjs';
-// import Stepper from 'bs-stepper';
-import {DatePipe} from '@angular/common';
-import {GED_TBL, REPORTS} from '../../../../../enums/constants';
-import {DirectoryService} from "../../../../../services/directory.service";
-import {saveAs} from "file-saver";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { GridComponent, RowDeselectEventArgs, RowSelectEventArgs } from "@syncfusion/ej2-angular-grids";
+import { PaaService } from "../../../../../services/paa.service";
+import { DialogComponent, PositionDataModel } from '@syncfusion/ej2-angular-popups';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FileService } from "../../../../../services/file.service";
+import { HttpClient, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { DatePipe } from '@angular/common';
+import { GED_TBL, REPORTS } from '../../../../../enums/constants';
+import { DirectoryService } from "../../../../../services/directory.service";
+import { saveAs } from "file-saver";
 import { OffcanvasComponent } from 'src/app/components/offcanvas/offcanvas.component';
 import { EtablissementSelectComponent } from '../../etablissement-select/etablissement-select.component';
 import { EtablissementService } from 'src/app/services/etablissement.service';
-import { SERVER_URL_BE } from 'src/environments/environment';
-import { rangeValidator } from 'src/app/validateurs/rangeValidator';
+import { ProcedurePaaService } from 'src/app/services/procedure.service';
+import { ProcedurePaa } from 'src/app/models/procedure.model';
+
 @Component({
   selector: 'app-paa',
   templateUrl: './paa.component.html',
   styleUrls: ['./paa.component.scss'],
   providers: [DatePipe]
 })
-
-
 export class PaaComponent implements OnInit {
   cpass = false;
-  @ViewChild('container', {read: ElementRef, static: true}) container: ElementRef;
-  public positionModal: PositionDataModel = {X: 450, Y: 100};
-  public positionModalDetail: PositionDataModel = {X: 330, Y: 50};
+
+  @ViewChild('container', { read: ElementRef, static: true }) container: ElementRef;
+  public positionModal: PositionDataModel = { X: 450, Y: 100 };
+  public positionModalDetail: PositionDataModel = { X: 330, Y: 50 };
   @ViewChild('ejDialog') ejDialog: DialogComponent;
   @ViewChild('dialogDossier') dialogDossier: DialogComponent;
   @ViewChild('dialogDetail') dialogDetail: DialogComponent;
@@ -39,10 +37,7 @@ export class PaaComponent implements OnInit {
   public dialogDossierDetail;
   public pageSettings: Object;
 
-
   @ViewChild('fileInput') fileInput!: ElementRef;
-
-
   @ViewChild('grid') public grid: GridComponent;
   selectedPaaId: number | null = null;
 
@@ -62,7 +57,7 @@ export class PaaComponent implements OnInit {
   selectedItem: any;
 
   fileInfos: Observable<any>;
-  btnValider=false;
+  btnValider = false;
   idDir: any;
   PaaFile: any;
 
@@ -78,14 +73,14 @@ export class PaaComponent implements OnInit {
     private fileService: FileService,
     private fb: FormBuilder,
     private etablissementService: EtablissementService,
+    private procedurePaaService: ProcedurePaaService,
     private http: HttpClient
-    
   ) {
     this.pageSettings = { pageSize: 10 };
     this.myDateYear = this.datePipe.transform(this.myDateYear, 'yyyy');
     this.newRowForm = this.fb.group({
       inpuBudgetaire: ["", Validators.required],
-      mntEstimatif: ['', [Validators.required, rangeValidator(100000, 400000)]],
+      mntEstimatif: ['', [Validators.required]],
       objetDepense: ['', Validators.required],
       datePreviLancement: ['', Validators.required],
       datePreviAttribution: ['', Validators.required]
@@ -99,37 +94,23 @@ export class PaaComponent implements OnInit {
       datePreviLancement: ['', Validators.required],
       datePreviAttribution: ['', Validators.required]
     });
-
   }
 
-
   ngOnInit(): void {
-
     this.getPaa();
     this.initFormDeclanchement();
     this.initFormCreateDir();
     this.fileInfos = this.fileService.getFiles();
-      this.loadEtablissements();
-    
-
-    // console.log(this.etablisementSelect.selected());
-
-    
+    this.loadEtablissements();
   }
 
   @ViewChild(OffcanvasComponent) offcanvas: OffcanvasComponent;
   @ViewChild(EtablissementSelectComponent) etablisementSelect: EtablissementSelectComponent;
-  // detaille(id: any) {
-  //   this.offcanvas.detaille(id);
-  // }
-  
 
-  toggleOffcanvas(id:any) {
+  toggleOffcanvas(id: any) {
     this.offcanvas.toggleOffcanvas();
     console.log("l'id du paa : " + id);
     this.offcanvas.detaillePaa(id);
-    
-    
   }
 
   onFileInputClick(): void {
@@ -140,12 +121,10 @@ export class PaaComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      // console.log('File selected:', file.name);
       this.paaService.uploadFile(file).subscribe(
         response => {
           this.message = 'File uploaded successfully!';
           this.getPaa();
-
         },
         error => {
           this.message = 'Failed to upload file: ' + error;
@@ -154,31 +133,26 @@ export class PaaComponent implements OnInit {
     } else {
       this.message = 'Please select a file first.';
     }
-      // Ajoutez ici votre code pour gérer le fichier sélectionné
-    }
-  
+  }
 
-    onDataBound() {
-      this.grid.groupModule.collapseAll();
-    }
-
-
-
+  onDataBound() {
+    this.grid.groupModule.collapseAll();
+  }
 
   selectFile(event) {
     this.selectedFiles = event.target.files;
   }
+
   onSelectPaa(paa: any) {
     this.selectedPaaId = paa.id;
   }
 
-
-  upload(gedTbl: any,idElmn:any) {
+  upload(gedTbl: any, idElmn: any) {
     this.message = '';
     this.errorMsg = '';
     this.progress = 0;
     this.currentFile = this.selectedFiles.item(0);
-    this.fileService.upload(this.currentFile, idElmn, 4,gedTbl).subscribe(
+    this.fileService.upload(this.currentFile, idElmn, 4, gedTbl).subscribe(
       event => {
         if (event.type === HttpEventType.UploadProgress) {
           this.progress = Math.round(100 * event.loaded / event.total);
@@ -186,60 +160,48 @@ export class PaaComponent implements OnInit {
           this.message = event.body.message;
           this.fileInfos = this.fileService.getFiles();
           if (this.progress === 100) {
-            //this.message = '';
-            this.btnValider = true
+            this.btnValider = true;
             this.currentFile = null;
-            if(gedTbl === GED_TBL.EXPRESSION_BESOIN){
-              this.btnValiderDeclanchement()
-            }  else {
+            if (gedTbl === GED_TBL.EXPRESSION_BESOIN) {
+              this.btnValiderDeclanchement();
+            } else {
               this.formCreationDir.reset();
               this.dialogDossier.hide();
               this.getPaa();
             }
-
-
           }
         }
       },
       err => {
         this.progress = 0;
-        console.log(err)
+        console.log(err);
         this.errorMsg = err.error.message;
         this.currentFile = undefined;
-
       });
-
-    //this.selectedFiles = undefined;
-
   }
 
   btnValiderDeclanchement() {
-    Object.assign(this.validerFormDeclanchement.value, {id: this.selectedPaa[0]['id']})
-    this.paaService.declancchementPost(this.validerFormDeclanchement.value).subscribe(
-      {
-        next: (value) => {
-          console.log(value);
-          this.getPaa();
-          this.ejDialog.hide();
-        },
-        error: (error) => {
-          console.log(error);
-        },
-        complete: () => {
-          this.validerFormDeclanchement.reset();
-        }
-      })
+    Object.assign(this.validerFormDeclanchement.value, { id: this.selectedPaa[0]['id'] });
+    this.paaService.declancchementPost(this.validerFormDeclanchement.value).subscribe({
+      next: (value) => {
+        console.log(value);
+        this.getPaa();
+        this.ejDialog.hide();
+      },
+      error: (error) => {
+        console.log(error);
+      },
+      complete: () => {
+        this.validerFormDeclanchement.reset();
+      }
+    });
   }
 
   getPaa() {
     const res = this.paaService.getPaa().subscribe({
       next: (value) => {
-        // this.stepper = new Stepper(document.querySelector('#stepper1'), {
-        //   linear: false,
-        //   animation: true
-        // });
-        console.log(value)
-        this.data = value
+        console.log(value);
+        this.data = value;
       },
       error: (e) => {
         console.log(e);
@@ -250,35 +212,20 @@ export class PaaComponent implements OnInit {
   onSelect(item: any): void {
     if (item) {
       const token = localStorage.getItem('token');
-
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-      this.http.get(`http://localhost:8089/api/rest/Paa/${item.id}`,{headers}).subscribe({
-        // this.paaData = data;
+      this.http.get(`http://localhost:8089/api/rest/Paa/${item.id}`, { headers }).subscribe({
         next: (value) => {
           this.data = value;
-
         },
         error: () => {
-          
           this.data = "pas des donnees";
         }
       });
     }
-
-    // this.itemselected = item;
-    // console.log(item);
-    
-    
   }
-
-  // selected() {
-  //   return this.itemselected;
-  // }
 
   loadEtablissements(): void {
     this.etablissementService.getEtablissements().subscribe(data => {
-      // Ajouter une propriété combinée pour afficher à la fois l'ID et le nom
       this.items = data.map((item: any) => ({
         ...item,
         displayName: `${item.id}  | ${item.nom} `
@@ -289,15 +236,11 @@ export class PaaComponent implements OnInit {
 
   validerPaa(id: any) {
     const res = this.paaService.validerPaa(id).subscribe({
-
       next: () => {
-        // Rafraîchir la page après la suppression
-        this.getPaa(); // Actualiser la liste des PAA après l'ajout
+        this.getPaa();
       }
-
     });
   }
-
 
   private cancelClick(): void {
     this.DialogObj.hide();
@@ -311,28 +254,28 @@ export class PaaComponent implements OnInit {
     this.cpass = true;
     this.ejDialog.show();
   };
+
   public declancherDetail = (event: any): void => {
     this.cpass = true;
-   this.getFilesForPaa();
+    this.getFilesForPaa();
   };
 
-  getFilesForPaa(){
-    console.log(this.selectedPaa[0]['id'],GED_TBL.EXPRESSION_BESOIN);
-    this.fileService.getDirPaa(this.selectedPaa[0]['id'],GED_TBL.EXPRESSION_BESOIN).subscribe(
-      {
-        next: (value) => {
-          console.log(value)
-          this.PaaFile =value;
-          this.dialogDetail.show();
-
-        },
-        error: (error) => {
-          console.log(error);
-        },
-      });
+  getFilesForPaa() {
+    console.log(this.selectedPaa[0]['id'], GED_TBL.EXPRESSION_BESOIN);
+    this.fileService.getDirPaa(this.selectedPaa[0]['id'], GED_TBL.EXPRESSION_BESOIN).subscribe({
+      next: (value) => {
+        console.log(value);
+        this.PaaFile = value;
+        this.dialogDetail.show();
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
   }
+
   validation(e) {
-    this.message=''
+    this.message = '';
     if (this.cpass) {
       e.cancel = false;
     } else {
@@ -341,27 +284,22 @@ export class PaaComponent implements OnInit {
   }
 
   rowSelected(args: RowSelectEventArgs) {
-    console.log(this.grid.getSelectedRecords())
+    console.log(this.grid.getSelectedRecords());
     this.selectedPaa = this.grid.getSelectedRecords();
     console.log("le paa : " + this.selectedPaa[0]["id"]);
     this.paaId = this.selectedPaa[0]["id"];
-
-// Exemple pour mettre à jour un seul champ du formulaire
-  this.modifierForm.get('id')?.patchValue(this.selectedPaa[0]["id"]);
-  this.modifierForm.get('inpuBudgetaire')?.patchValue(this.selectedPaa[0]["inpuBudgetaire"]);
-  this.modifierForm.get('mntEstimatif')?.patchValue(this.selectedPaa[0]["mntEstimatif"]);
-  this.modifierForm.get('objetDepense')?.patchValue(this.selectedPaa[0]["objetDepense"]);
-  this.modifierForm.get('datePreviLancement')?.patchValue(this.selectedPaa[0]["datePreviLancement"]);
-  this.modifierForm.get('datePreviAttribution')?.patchValue(this.selectedPaa[0]["datePreviAttribution"]);
-
-    
-
+    this.modifierForm.get('id')?.patchValue(this.selectedPaa[0]["id"]);
+    this.modifierForm.get('inpuBudgetaire')?.patchValue(this.selectedPaa[0]["inpuBudgetaire"]);
+    this.modifierForm.get('mntEstimatif')?.patchValue(this.selectedPaa[0]["mntEstimatif"]);
+    this.modifierForm.get('objetDepense')?.patchValue(this.selectedPaa[0]["objetDepense"]);
+    this.modifierForm.get('datePreviLancement')?.patchValue(this.selectedPaa[0]["datePreviLancement"]);
+    this.modifierForm.get('datePreviAttribution')?.patchValue(this.selectedPaa[0]["datePreviAttribution"]);
     this.initFormCreateDir();
   }
 
   rowDeselected($event: RowDeselectEventArgs) {
     this.selectedPaa = null;
-    console.log(this.selectedPaa)
+    console.log(this.selectedPaa);
   }
 
   validerFormDeclanchement: FormGroup;
@@ -374,11 +312,10 @@ export class PaaComponent implements OnInit {
     });
   }
 
-
-  imprimer(id,idTbl) {
-    this.paaService.telechargerPieceJointe(id,idTbl).subscribe((value: Blob) => {
+  imprimer(id, idTbl) {
+    this.paaService.telechargerPieceJointe(id, idTbl).subscribe((value: Blob) => {
       console.log(value);
-      const blob = new Blob([value], {type: 'application/pdf'});
+      const blob = new Blob([value], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       window.open(url);
     }, (error) => {
@@ -387,11 +324,11 @@ export class PaaComponent implements OnInit {
       console.log('completed');
     });
   }
+
   downloadFile(fileData: any): void {
-    this.directoryService
-      .download(fileData.fileNameOnDisc, fileData.fileSubFolder)
-      .subscribe(blob => saveAs(blob, fileData.fileNameOnDisc));
+    this.directoryService.download(fileData.fileNameOnDisc, fileData.fileSubFolder).subscribe(blob => saveAs(blob, fileData.fileNameOnDisc));
   }
+
   CreationDossier($event: MouseEvent) {
     this.cpass = true;
     this.message = '';
@@ -399,19 +336,18 @@ export class PaaComponent implements OnInit {
     this.dialogDossier.show();
     this.btnValider = false;
   }
+
   addNewRow() {
     if (this.newRowForm.valid) {
-      this.ajouterPaa(); // Appel de la méthode ajouterPaa() pour envoyer les données à l'API
+      this.ajouterPaa();
       console.log('Nouvelle ligne ajoutée :', this.newRowForm.value);
       this.newRowForm.reset();
       this.showNewRow = false;
     }
   }
 
-  modifierPaa(id:any) {
-
+  modifierPaa(id: any) {
     console.log("le paa a modifier : " + id);
-    
     const nouveauPaa = {
       inpuBudgetaire: this.modifierForm.get('inpuBudgetaire').value,
       mntEstimatif: this.modifierForm.get('mntEstimatif').value,
@@ -419,16 +355,12 @@ export class PaaComponent implements OnInit {
       datePreviLancement: this.modifierForm.get('datePreviLancement').value,
       datePreviAttribution: this.modifierForm.get('datePreviAttribution').value
     };
-
     this.paaService.modifierPaa(id, nouveauPaa).subscribe({
-
       next: (value) => {
         console.log("modifier avec succee");
-        this.getPaa(); // Actualiser la liste des PAA après l'ajout
+        this.getPaa();
       }
-      
     });
-    
   }
 
   ajouterPaa(): void {
@@ -439,50 +371,34 @@ export class PaaComponent implements OnInit {
       datePreviLancement: this.newRowForm.get('datePreviLancement').value,
       datePreviAttribution: this.newRowForm.get('datePreviAttribution').value
     };
-
     this.paaService.addPaa(nouveauPaa).subscribe(
       (response) => {
         console.log('PAA ajouté avec succès:', response);
-        // Réinitialiser le formulaire ou faire autre chose après l'ajout
         this.newRowForm.reset();
         this.showNewRow = false;
-        this.getPaa(); // Actualiser la liste des PAA après l'ajout
+        this.getPaa();
       },
       (error) => {
         console.error('Erreur lors de l\'ajout du PAA:', error);
       }
     );
   }
+
   supprimerPaa(id: number): void {
     this.paaService.supprimerPaa(id).subscribe(
       (response) => {
         console.log('PAA supprimée avec succès:', response);
-        // Rafraîchir la page après la suppression
-        this.getPaa(); // Actualiser la liste des PAA après l'ajout
+        this.getPaa();
       },
       (error) => {
-                // Rafraîchir la page après la suppression
-       this.getPaa(); // Actualiser la liste des PAA après l'ajout
-
+        this.getPaa();
         console.error('Erreur lors de la suppression de la PAA:', error);
       }
     );
   }
 
-
-
-
-  // public stepper: Stepper;
   formCreationDir: FormGroup;
   myDateYear: any = new Date();
-
-  // next() {
-  //   this.stepper.next();
-  // }
-
-  // previous() {
-  //   this.stepper.previous();
-  // }
 
   initFormCreateDir() {
     if (this.selectedPaa != null) {
@@ -491,7 +407,6 @@ export class PaaComponent implements OnInit {
         objetDepense: [this.selectedPaa[0]['objetDepense'], Validators.required],
         inpuBudgetaire: [this.selectedPaa[0]['inpuBudgetaire'], Validators.required],
         file: ['', Validators.required],
-
       });
     } else {
       this.formCreationDir = this.fb.group({
@@ -501,24 +416,60 @@ export class PaaComponent implements OnInit {
         file: ['', Validators.required],
       });
     }
-
   }
-
 
   validerCreationDir() {
-    const obj = {reference: this.formCreationDir.get('reference').value, idPaa: this.selectedPaa[0]['id'],fkIduser:4};
-    this.paaService.validateCreateDir(obj).subscribe(
-      {
-        next: (value) => {
-          this.idDir = value.id;
-          this.upload(GED_TBL.INITIATION_PROCEDURE, this.idDir);
-          this.message = '';
-          this.errorMsg = '';
-        },
-        error: (error) => {
-          console.log(error);
-        },
-      });
-    // this.next();
+    const obj = { reference: this.formCreationDir.get('reference').value, idPaa: this.selectedPaa[0]['id'], fkIduser: 4 };
+    this.paaService.validateCreateDir(obj).subscribe({
+      next: (value) => {
+        this.idDir = value.id;
+        this.upload(GED_TBL.INITIATION_PROCEDURE, this.idDir);
+        this.message = '';
+        this.errorMsg = '';
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
   }
+
+  createProcedure() {
+    if (this.validerFormDeclanchement.valid) {
+      const file = this.selectedFiles ? this.selectedFiles[0] : null;
+      const pathBesoin = file ? `"C:\\Users\\JELIL\\Desktop\\stage_project\\uploads\\procedures\\besoins\\${file.name}` : null;
+      const pathInitialProcedure = file ? `C:\\Users\\JELIL\\Desktop\\stage_project\\uploads\\procedures\\report_${this.selectedPaa[0]['id']}.pdf` : null;
+
+      const procedureData: ProcedurePaa = {
+        id: null,
+        deadlineEstime: null,
+        description: this.selectedPaa[0]['objetDepense'],
+        montant: this.selectedPaa[0]['mntEstimatif'],
+        origin: this.validerFormDeclanchement.value.origine,
+        destinataire: this.validerFormDeclanchement.value.destinataire,
+        pathBesoin: pathBesoin,
+        pathInitialProcedure: pathInitialProcedure,
+        sourceFinanciere: this.selectedPaa[0]['inpuBudgetaire'],
+        paa: { id: this.selectedPaa[0]['id'] }
+      };
+      console.log(procedureData);
+
+      if (file) {
+        this.procedurePaaService.createProcedure(procedureData, file).subscribe({
+          next: (value) => {
+            console.log('Procedure created successfully', value);
+            this.getPaa();
+            this.ejDialog.hide();
+          },
+          error: (error) => {
+            console.error('Failed to create procedure', error);
+          }
+        });
+      } else {
+        console.error('No file selected');
+      }
+    } else {
+      console.error('Form is invalid');
+    }
+  }
+
 }
