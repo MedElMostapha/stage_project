@@ -6,13 +6,12 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EtablissementService {
-  private apiUrl = 'http://localhost:8089/api/rest/etablissements';
+  private apiUrl = 'http://localhost:8081/api/rest/etablissements';
 
   constructor(private http: HttpClient) { }
 
   getEtablissements(): Observable<any[]> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const headers = this.getHeaders();
     return this.http.get<any[]>(this.apiUrl, { headers });
   }
 
@@ -32,5 +31,12 @@ export class EtablissementService {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.delete<any>(`${this.apiUrl}/${id}`, { headers });
+  }
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 }

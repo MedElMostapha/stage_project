@@ -63,13 +63,14 @@ export class DefaultSidebarComponent implements OnInit{
     this.profilSelection = localStorage.getItem('profilSelection');
     let jwtHelper = new JwtHelperService();
    if(localStorage.getItem('token')!=null){
-     let objJWT =jwtHelper.decodeToken(localStorage.getItem('token'))
-     if(objJWT.roles.length>0){
-       return true
-     }else {
-       console.log("Vous n'avez pas de profil")
-       return false
-     }
+    //  let objJWT =jwtHelper.decodeToken(localStorage.getItem('token'))
+    //  if(objJWT.roles.length>0){
+    //    return true
+    //  }else {
+    //    console.log("Vous n'avez pas de profil")
+    //    return false
+     //  }
+     return true
    }
 
   }

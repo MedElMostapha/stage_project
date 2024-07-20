@@ -10,6 +10,9 @@
     </div><!-- /.container-fluid -->
   </section>
 
+  <app-offcanvas [detaillePaa]="detaille"></app-offcanvas>
+
+
   <!-- Main content: Dialog for Adding/Editing Procedures -->
   <section class="content">
     <div class="container-fluid">
@@ -85,26 +88,48 @@
   <!-- Grid Section for Displaying Procedures -->
   <section class="content">
     <div class="container-fluid">
+
       <div class="row justify-content-center mt-3">
+
+        <div class="col-auto">
+          <button *ngIf="selectedProcedure" class="btn btn-sm btn-outline-primary">
+            Creer un dossier
+          </button>
+        </div>
+
         <div class="col-auto">
           <button *ngIf="selectedProcedure" (click)="triggerAddEdit(false, selectedProcedure)" class="btn btn-sm btn-outline-primary">
             Modifier
           </button>
         </div>
+        <div class="col-auto">
+          <button *ngIf="selectedProcedure" (click)="deleteProcedure(selectedProcedure[0]['id'])" class="btn btn-sm btn-outline-warning">
+            Annuler
+          </button>
+        </div>
+        
+        <div class="col-auto">
+          <button *ngIf="selectedProcedure" class="btn btn-sm btn-outline-info"
+          (click)="toggleOffcanvas(selectedProcedure[0]['id'])"
+
+          >
+            <i class="bi bi-eye"></i>
+            Detail
+          </button>
+        </div>
       </div>
+      
+
       <div class="row mt-3">
         <ejs-grid #grid (rowSelected)="rowSelected($event)" (rowDeselected)="rowDeselected($event)"
                   [dataSource]="procedures" id="gridcomp" allowSorting="true"
                   [allowPaging]="true" height="350" gridLines="Both" [pageSettings]="pageSettings">
           <e-columns>
-            <e-column field="id" headerText="ID" textAlign="Center" width="100"></e-column>
             <e-column field="deadlineEstime" headerText="Deadline Estimé" textAlign="Center" width="200"></e-column>
-            <e-column field="description" headerText="Description" textAlign="Center" width="300"></e-column>
             <e-column field="destinataire" headerText="Destinataire" textAlign="Center" width="200"></e-column>
             <e-column field="montant" headerText="Montant" textAlign="Center" width="150"></e-column>
             <e-column field="origin" headerText="Origine" textAlign="Center" width="150"></e-column>
             <e-column field="sourceFinanciere" headerText="Source Financière" textAlign="Center" width="200"></e-column>
-            <e-column field="paa.id" headerText="PAA ID" textAlign="Center" width="100"></e-column>
           </e-columns>
         </ejs-grid>
       </div>

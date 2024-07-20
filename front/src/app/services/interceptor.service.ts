@@ -18,5 +18,5 @@ export class InterceptorService implements HttpInterceptor{
         this.loaderService.isLoading.next(false);
       })
     )
-  }
+  }z
 }

@@ -22,6 +22,8 @@ import { DialogComponent, PositionDataModel } from '@syncfusion/ej2-angular-popu
 })
 export class LoginComponent implements OnInit {
   getItem;
+  userId: any;
+  userNom: any;
   roless;
   selected;
   usernamecnx;
@@ -118,14 +120,19 @@ export class LoginComponent implements OnInit {
   decline(): void {
     this.modalService.hide();
   }
-  onLogin2(data:any){
+  onLogin2(data: any) {
+    console.log(JSON.stringify(data)); // Le deuxième paramètre ajoute un espacement pour une meilleure lisibilité
+    
     this.CheckCon = true;
     console.log(data);
     this.authService.login(data)
-      .subscribe(resp=>{
-        let jwt =resp.headers.get('Authorization');
-        this.authService.saveToken(jwt);
-        this.router.navigateByUrl("/Consultation Personnel");
+      .subscribe(resp => {
+        
+        console.log("donnee returnee "+JSON.stringify(resp)); // Le deuxième paramètre ajoute un espacement pour une meilleure lisibilité
+        
+        // let jwt =resp.headers.get('Authorization');
+        // this.authService.saveToken(jwt);
+        // this.router.navigateByUrl("/Consultation Personnel");
       },err=>{
         if (err.error === null){
           this.add('danger', 'Informations Incorrectes ! ', 3000);
@@ -138,11 +145,22 @@ export class LoginComponent implements OnInit {
   async getProfil(){
     this.profilSelection=this.selected
     localStorage.setItem('profilSelection',this.profilSelection) ;
-    let jwt =this.resiltCnx.headers.get('Authorization');
-    let jwtHelper = new JwtHelperService();
-    let objJWT =jwtHelper.decodeToken(jwt);
-    this.roless = objJWT.roles;
-    await this.authService.saveToken(jwt)
+    this.authService.GetUserRoles(this.userId).subscribe({
+      next: (value) => {
+
+        
+
+
+        if (Array.isArray(value)) {
+          // Utilisation de map si value est un tableau
+          this.roless = value.map((item: { authority: string }) => item.authority);
+          console.log(this.roless); // ["ADMIN", "USER"]
+        }
+
+    
+      }
+    });
+  
     await this.modalService.hide();
     //this.router.navigateByUrl("/Accueil");
     this.isAuthLoading = false;
@@ -161,53 +179,121 @@ export class LoginComponent implements OnInit {
       return e
     }
   }
-  async onLogin(data:any,temp){
+
+  // setTimeout(() => {
+
+  //   const data = localStorage.getItem("data");
+  //   let res = await this.authService.login(data).toPromise();
+
+  //   if (res) {
+  //     this.authService.saveToken(res["access-token"]);
+      
+  //   }
+
+
+
+
+
+    
+  // }, 60000);
+
+  async onLogin(data: any, temp) {
+  
+    
+    console.log(JSON.stringify(data)); // Le deuxième paramètre ajoute un espacement pour une meilleure lisibilité
+    
     this.CheckCon = true;
     try {
       this.isAuthLoading = true;
       let res = await this.authService.login(data).toPromise();
       this.isAuthLoading = false;
       this.resiltCnx =(res);
-      if (res){
-        await this.isUserActived(data.username).then(response=> {
-          if (response.status===200) {
-            console.log(response);
-            localStorage.setItem('username', data.username);
-            let jwt = res.headers.get('Authorization');
-            this.usernamecnx = data.username;
-            let jwtHelper = new JwtHelperService();
-            let objJWT = jwtHelper.decodeToken(jwt);
-            console.log("le toddddd :"+objJWT.sub);
+      if (res) {
 
-            if (objJWT.roles.length > 1) {
-              // this.modalService.show(temp, Object.assign({}, {
-              //   class: 'modalParent  modal-xm',
-              //   ignoreBackdropClick: true
-              // }))
-              this.openModal2(temp)
-              this.roless = objJWT.roles;
-            } else {
-              this.profilSelection = objJWT.roles[0];
-               this.authService.saveToken(jwt);
-              //console.log(objJWT.roles[0]);
-              localStorage.setItem('profilSelection', this.profilSelection)
+        localStorage.setItem("data", data);
+        // console.log("user authenfied : "+ JSON.stringify(res));
+
+        console.log("le tocken : " + res["access-token"]);
+
+        this.authService.saveToken(res["access-token"]);
+        this.userId = res["userId"];
+        localStorage.setItem("username", res["nom"])
+        localStorage.setItem("nom",res["prenom"])
+
+        this.authService.GetUserRoles(res["userId"]).subscribe({
+          next: (value) => {
+
+            
+
+
+            if (Array.isArray(value)) {
+              // Utilisation de map si value est un tableau
+              this.roless = value.map((item: { authority: string }) => item.authority);
+              console.log(this.roless); // ["ADMIN", "USER"]
+          } 
+
+          
+            this.modalService.show(temp, Object.assign({}, {
+              class: 'modalParent  modal-xm',
+              ignoreBackdropClick: true
+            }));
+            this.openModal2(temp);
+
+            this.router.navigate(['/Accueil'])
+                
+
+            
+
+            
+            
+            // console.log("les roles "+JSON.stringify(value));
+          }
+        });
+
+        
+        
+
+        
+        
+        // await this.isUserActived(data.username).then(response=> {
+        //   if (response.status===200) {
+        //     console.log(response);
+        //     localStorage.setItem('username', data.username);
+        //     let jwt = res.headers.get('Authorization');
+        //     this.usernamecnx = data.username;
+        //     let jwtHelper = new JwtHelperService();
+        //     let objJWT = jwtHelper.decodeToken(jwt);
+        //     console.log("le toddddd :"+objJWT.sub);
+
+        //     if (objJWT.roles.length > 1) {
+        //       // this.modalService.show(temp, Object.assign({}, {
+        //       //   class: 'modalParent  modal-xm',
+        //       //   ignoreBackdropClick: true
+        //       // }))
+        //       this.openModal2(temp)
+        //       this.roless = objJWT.roles;
+        //     } else {
+        //       this.profilSelection = objJWT.roles[0];
+        //        this.authService.saveToken(jwt);
+        //       //console.log(objJWT.roles[0]);
+        //       localStorage.setItem('profilSelection', this.profilSelection)
               
-              this.isAuthLoading = false;
-              this.router.navigate(['/Accueil'])
-                // .then(() => {
-                //   location.reload(false);
-                // });
-            }
-          }
-          if (response.status===400){
-            // this.element.show({
-            //   title: 'Error   !', content: 'Compte Inactif ! Attendre la validation .', cssClass: 'e-toast-warning'
-            // });
+        //       this.isAuthLoading = false;
+        //       this.router.navigate(['/Accueil'])
+        //         // .then(() => {
+        //         //   location.reload(false);
+        //         // });
+        //     }
+        //   }
+        //   if (response.status===400){
+        //     // this.element.show({
+        //     //   title: 'Error   !', content: 'Compte Inactif ! Attendre la validation .', cssClass: 'e-toast-warning'
+        //     // });
 
-            this.toastr.showToast('Authentification', "Compte Inactif ! Contacter L'administrateur", 4000,'error')
-            this.isAuthLoading = false;
-          }
-        })
+        //     this.toastr.showToast('Authentification', "Compte Inactif ! Contacter L'administrateur", 4000,'error')
+        //     this.isAuthLoading = false;
+        //   }
+        // })
       }
     }catch (e){
       console.log(this.alerts.splice(0))
@@ -241,7 +327,7 @@ export class LoginComponent implements OnInit {
          // this.add('success', 'Mise à Jour Reussi ! ', 3000);
           this.toastr.showToast('Changement Mot de Passe', "Mise à Jour Reussi !!", 4000,'success')
           this.modalRef.hide();
-        }
+        } 
       })
     }
   }

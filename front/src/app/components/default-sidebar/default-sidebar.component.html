@@ -63,7 +63,7 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false" style="font-size: smaller">
          
-          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMINISTRATEUR'||profilSelection==='CONSULTATION'|| profilSelection==='SAISIE'|| profilSelection==='VALIDATION' ">
+          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMIN'||profilSelection==='CONSULTATION'|| profilSelection==='SAISIE'|| profilSelection==='VALIDATION' ">
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a routerLink="/Accueil" class="nav-link">
@@ -73,7 +73,7 @@
               </li>
             </ul>
           </li>
-          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMINISTRATEUR'">
+          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMIN'">
             <a  class="nav-link" style="color: #007bff">
               <i class="nav-icon fas fa-list"></i>
               <p>
@@ -81,6 +81,7 @@
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
+            
             <ul class="nav nav-treeview">
               <li class="nav-item ">
                 <a routerLink="/paa" class="nav-link ">
@@ -116,7 +117,7 @@
               
             </ul>
           </li>
-          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMINISTRATEUR'">
+          <li class="nav-item has-treeview menu-open" *ngIf="profilSelection==='ADMIN'">
             <a  class="nav-link" style="color: #007bff">
               <i class="nav-icon fas fa-users-cog"></i>
               <p>

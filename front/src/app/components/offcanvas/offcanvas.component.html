@@ -1,69 +1,509 @@
-<div [class.offcanvas-show]="showOffcanvas" class="offcanvas offcanvas-right bg-light border-left shadow-sm">
+<div [class.offcanvas-show]="showOffcanvas" *ngIf="showOffcanvas" class="offcanvas offcanvas-right bg-light border-left shadow-sm">
     <div class="offcanvas-header p-3">
-        <button type="button" class="close" aria-label="Close" (click)="toggleOffcanvas()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <h5 class="offcanvas-title text-primary">Détaille du PAA | {{detaille?.id}}</h5>
+      <button type="button" class="close" aria-label="Close" (click)="toggleOffcanvas(viewType)">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h5 class="offcanvas-title text-primary" >
+
+        Détaille du {{ viewType === 'PAA' ? 'PAA' : 'Procedure' }} | {{ viewType === 'PAA' ? etablissement : detaille?.id }}
+      </h5>
     </div>
     <hr>
     <div class="offcanvas-body p-4 row" *ngIf="detaille">
-        <!-- Contenu de l'offcanvas -->
-         <div class="col">
-            <div class="mb-4">
-                <h6 class="text-uppercase">Input budgétaire</h6>
-                <p>{{ detaille.inpuBudgetaire }}</p>
+      <button
+            class="btn btn-sm btn-outline-primary"
+            (click)="showNewRow = !showNewRow"
+          >
+            <span class="fas fa-plus"></span> Ajouter
+          </button>
+      <!-- Contenu de l'offcanvas pour PAA -->
+      <ng-container *ngIf="viewType === 'PAA'">
+
+        <div class="col-auto mt-4">
+          <div *ngIf="showNewRow" class="mt-2">
+            <form
+              [formGroup]="newRowForm"
+              (ngSubmit)="addNewRow()"
+              class="container"
+            >
+              <div class="row g-2">
+                <div class="col-md-2">
+                  <input
+                    formControlName="inpuBudgetaire"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Imputation"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <input
+                    formControlName="mntEstimatif"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Montant"
+                  />
+                  <div
+                    *ngIf="
+                      newRowForm.get('mntEstimatif').touched &&
+                      newRowForm.get('mntEstimatif').dirty &&
+                      newRowForm.get('mntEstimatif').errors
+                    "
+                  >
+                    <small
+                      style="color: red"
+                      *ngIf="newRowForm.get('mntEstimatif').errors"
+                    >
+                      Le montant doit être entre 100000 et 400000.
+                    </small>
+                  </div>
+                </div>
+
+                <div class="col-md-2">
+                  <input
+                    formControlName="objetDepense"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Objet Depense"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <input
+                    formControlName="datePreviLancement"
+                    type="date"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder=""
+                  />
+                </div>
+                <div class="col-md-2">
+                  <input
+                    formControlName="datePreviAttribution"
+                    type="date"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Objet Depense"
+                  />
+                </div>
+                <div class="col-md-2 text-center">
+                  <button
+                    [disabled]="newRowForm.invalid"
+                    class="btn btn-success btn-sm"
+                    type="submit"
+                  >
+                    <i class="bi bi-check2"></i>Confirmer
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          
+
+          <div *ngIf="modifierRow" class="mt-2">
+            <form
+              [formGroup]="modifierForm"
+              (ngSubmit)="addNewRow()"
+              class="container"
+            >
+              <div class="row g-2">
+                <div class="col-md-2">
+                  <input
+                    formControlName="inpuBudgetaire"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Imputation"
+                  />
+                </div>
+                <input
+                  formControlName="id"
+                  type="hidden"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder="id"
+                />
+
+                <div class="col-md-2">
+                  <input
+                    formControlName="mntEstimatif"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Montant"
+                  />
+                </div>
+
+                <div class="col-md-2">
+                  <input
+                    formControlName="objetDepense"
+                    type="text"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Objet Depense"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <input
+                    formControlName="datePreviLancement"
+                    type="date"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder=""
+                  />
+                </div>
+                <div class="col-md-2">
+                  <input
+                    formControlName="datePreviAttribution"
+                    type="date"
+                    class="form-control text-center form-control-xs form-control-sm"
+                    placeholder="Objet Depense"
+                  />
+                </div>
+                <div class="col-md-2 text-center">
+                  <button
+                    [disabled]="modifierForm.invalid"
+                    (click)="modifierPaa(selectedPaa[0]['id'])"
+                    class="btn btn-success btn-sm"
+                    type="submit"
+                  >
+                    <i class="bi bi-check2"></i>Modifier
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+
+        <div *ngIf="modifierRow" class="mt-2">
+          <form
+            [formGroup]="modifierForm"
+            (ngSubmit)="addNewRow()"
+            class="container"
+          >
+            <div class="row g-2">
+              <div class="col-md-2">
+                <input
+                  formControlName="inpuBudgetaire"
+                  type="text"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder="Imputation"
+                />
+              </div>
+              <input
+                formControlName="id"
+                type="hidden"
+                class="form-control text-center form-control-xs form-control-sm"
+                placeholder="id"
+              />
+
+              <div class="col-md-2">
+                <input
+                  formControlName="mntEstimatif"
+                  type="text"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder="Montant"
+                />
+              </div>
+
+              <div class="col-md-2">
+                <input
+                  formControlName="objetDepense"
+                  type="text"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder="Objet Depense"
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  formControlName="datePreviLancement"
+                  type="date"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder=""
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  formControlName="datePreviAttribution"
+                  type="date"
+                  class="form-control text-center form-control-xs form-control-sm"
+                  placeholder="Objet Depense"
+                />
+              </div>
+              <div class="col-md-2 text-center">
+                <button
+                  [disabled]="modifierForm.invalid"
+                  (click)="modifierPaa(selectedPaa[0]['id'])"
+                  class="btn btn-success btn-sm"
+                  type="submit"
+                >
+                  <i class="bi bi-check2"></i>Modifier
+                </button>
+              </div>
             </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Objet de dépense</h6>
-                <p>{{ detaille.objetDepense }}</p>
-            </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Montant initial</h6>
-                <p>{{ detaille.mntEstimatif }} MRU</p>
-            </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Montant restant</h6>
-                <p>{{ detaille.montantRestant }} MRU</p>
+          </form>
+        </div>
+
+        <div *ngIf="selectedPaa != null" style="margin-bottom: 20px;align-items: center;margin-left: 40%;">
+            
+          <button
+            [hidden]="selectedPaa[0]['enprocedure']"
+            *ngIf="selectedPaa[0]['isvalidated'] === true"
+            class="btn btn-sm btn-outline-primary"
+            (click)="declancherProcedure($event)"
+            type="button"
+          >
+            <span class="fas fa-check-square"></span>
+            Déclencher la procédure
+          </button>
+          <button
+            *ngIf="selectedPaa[0]['isvalidated'] === false"
+            class="btn btn-sm btn-outline-primary"
+            (click)="validerPaa(selectedPaa[0]['id'])"
+            type="button"
+          >
+            <span class="fas fa-check-square"></span>
+            valider
+          </button>
+
+          <button
+            [hidden]="selectedPaa[0]['enprocedure'] === true"
+            *ngIf="
+              selectedPaa && selectedPaa.length > 0 && 'enProcedure';
+              in: selectedPaa[0]
+            "
+            (click)="supprimerPaa(selectedPaa[0]['id'])"
+            class="btn btn-sm btn-outline-danger ml-4"
+            type="button"
+          >
+            Supprimer
+          </button>
+          <button
+            [hidden]="selectedPaa[0]['enprocedure'] === true"
+            *ngIf="selectedPaa && selectedPaa.length > 0"
+            (click)="modifierRow = !modifierRow"
+            class="btn btn-sm btn-outline-primary ml-4"
+            type="button"
+          >
+            Modifier
+          </button>
+
+          <button
+            [hidden]="selectedPaa[0]['enprocedure'] === true"
+            *ngIf="
+              selectedPaa && selectedPaa.length > 0 && 'enProcedure';
+              in: selectedPaa[0]
+            "
+            class="btn btn-sm btn-outline-info ml-4"
+            (click)="toggleOffcanvas(selectedPaa[0]['id'])"
+          >
+            <i class="bi bi-eye"></i>
+            Detaille
+          </button>
+
+          <!-- <button
+            (click)="CreationDossier($event)"
+            *ngIf="selectedPaa != null"
+            [hidden]="
+              (selectedPaa[0]['enprocedure'] === true &&
+                selectedPaa[0]['dosssierCree'] === true) ||
+              selectedPaa[0]['enprocedure'] === false ||
+              selectedPaa[0]['modPassation'].id === 2
+            "
+            class="btn btn-sm btn-outline-primary ml-4"
+            type="button"
+          >
+            <span class="fas fa-folder-plus"></span>
+            Creer un dossier
+          </button> -->
+          <!--            [hidden]="!data.enprocedure"-->
+          <!-- <button
+            [hidden]="selectedPaa[0]['enprocedure'] === false"
+            *ngIf="selectedPaa != null"
+            (click)="imprimer(selectedPaa[0]['id'], REPORTS.initiation)"
+            class="btn btn-sm btn-outline-primary ml-4"
+            type="button"
+          >
+            <span class="fas fa-print"></span>
+            Imprimer
+          </button>
+          <button
+            [hidden]="selectedPaa[0]['enprocedure'] === false"
+            *ngIf="selectedPaa != null"
+            (click)="declancherDetail($event)"
+            class="btn btn-sm btn-outline-primary ml-4"
+            type="button"
+          >
+            <span class="fas fa-eye"></span>
+            Detail
+          </button> -->
+          <!-- <button *ngIf="selectedPaa && !selectedPaa[0].enprocedure"
+      (click)="supprimerPaa(selectedPaa[0].id)"
+      class="btn btn-sm btn-outline-danger"
+      type="button">
+<span class="fas fa-trash"></span> Supprimer
+</button> -->
+        </div>
+
+        <div class="col-md-12">
+          <div class="row">
+            <ejs-grid
+              (rowSelected)="rowSelected($event)"
+              (rowDeselected)="rowDeselected($event)"
+              [allowSelection]="true"
+              #grid
+              [dataSource]="detaille"
+              id="gridcomp"
+              allowSorting="true"
+              height="350"
+              gridLines="Both"
+              [pageSettings]="pageSettings"
+              
+            >
+              <e-columns>
+                <e-column
+                  field="inpuBudgetaire"
+                  headerText="Input Budgetaire"
+                  textAlign="Center"
+                  width="150"
+                >
+                  <ng-template #template let-detaille class="grid" >
+                    {{ detaille.inpuBudgetaire }}
+                  </ng-template>
+
+                </e-column>
+
+                <e-column
+                  field="objetDepense"
+                  headerText="Objet de depense"
+                  textAlign="Center"
+                  width="150"
+                >
+
+                  <ng-template #template let-detaille class="grid" >
+                    {{ detaille.objetDepense}}
+                  </ng-template>
+
+                </e-column>
+                <e-column
+                  field="typeMarche"
+                  headerText="Type de contrat"
+                  textAlign="Center"
+                  width="150"
+                >
+
+                  <ng-template #template let-detaille class="grid" >
+                    {{ detaille.typeMarche.nom}}
+                  </ng-template>
+
+                </e-column>
+
+                <e-column
+                  field="modPassation"
+                  headerText="Mode de selection"
+                  textAlign="Center"
+                  width="150"
+                >
+
+                  <ng-template #template let-detaille class="grid" >
+                    {{ detaille.modPassation.nom}}
+                  </ng-template>
+
+                </e-column>
+
+                <e-column
+                  field="datePreviLancement"
+                  headerText="Date de previ de lancement"
+                  textAlign="Center"
+                  width="150"
+                >
+                  <ng-template #template let-detaille class="grid" >
+
+                    {{ detaille.datePreviLancement }}
+                  </ng-template>
+                </e-column>
+
+                <e-column
+                  field="datePreviAttribution"
+                  headerText="Date previ d'attribution"
+                  textAlign="Center"
+                  width="150"
+                >
+                  <ng-template #template let-detaille class="grid" >
+
+                    {{ detaille.datePreviAttribution}}
+                  </ng-template>
+                </e-column>
+
+                
+                
+
+                
+
+
+                
+              </e-columns>
+            </ejs-grid>
+          </div>
+        </div>
+      </ng-container>
+  
+      <!-- Contenu de l'offcanvas pour Procedure -->
+      <ng-container *ngIf="viewType === 'Procedure'">
+        <div class="col">
+          <div class="mb-4">
+            <h6 class="text-uppercase">Origin</h6>
+            <p>{{ detaille.origin }}</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Destinataire</h6>
+            <p>{{ detaille.destinataire }}</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Source Financière</h6>
+            <p>{{ detaille.sourceFinanciere }}</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Description</h6>
+            <p>{{ detaille.description }}</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Deadline Estimé</h6>
+            <p>{{ detaille.deadlineEstime | date:'longDate' }}</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Montant</h6>
+            <p>{{ detaille.montant }} MRU</p>
+          </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Document d l'initialistion de la  procedure</h6>
+            <div class="fileContainer row ">
+
+              <div class="col">
+
+                <a style="color: blue;cursor: pointer;" (click)="download(detaille.procedureFileNom,'procedures')">{{removeBeforeLastUnderscore( detaille.procedureFileNom )}}</a>
+              </div>
+              
+              <div class="col">
+                <i class="fa-duotone fa-file-arrow-down"></i>
+              </div>
+              
             </div>
 
-            <div class="mb-4">
-                <h6 class="text-uppercase">État</h6>
-                <span class="badge badge-success" *ngIf="detaille.isvalidated">VALIDE</span>
-                <span class="badge badge-danger" *ngIf="!detaille.isvalidated">NON VALIDE</span>
-            </div>
-         </div>
+        </div>
+          <div class="mb-4">
+            <h6 class="text-uppercase">Document de la specification du besoin</h6>
+            <div class="fileContainer">
 
-         <div class="col">
-            <div class="mb-4">
-                <h6 class="text-uppercase">Date prévue de lancement</h6>
-                <p>{{ detaille.datePreviLancement | date:'longDate' }}</p>
+              <div class="col">
+
+                <a style="color: blue;cursor: pointer;"  (click)="download(detaille.besoinFileNom,'besoins')">{{removeBeforeLastUnderscore( detaille.besoinFileNom) }}</a>
+              </div>
+              <div class="col">
+                <i class="fa-duotone fa-file-arrow-down"></i>
+              </div>
             </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Date prévue d'attribution</h6>
-                <p>{{ detaille.datePreviAttribution | date:'longDate' }}</p>
-            </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Établissement</h6>
-                <p>{{ detaille.etablissement?.nom }}</p>
-            </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Type de contrat</h6>
-                <p>{{ detaille.typeMarche.typeMarche }}</p>
-            </div>
-            <div class="mb-4">
-                <h6 class="text-uppercase">Mode de passation</h6>
-                <p>{{ detaille.modPassation.modePassation }}</p>
-            </div>
-         </div>
-        
-        
-        
-        <!-- Ajoutez d'autres propriétés de detaille ici -->
+        </div>
+        </div>
+      </ng-container>
     </div>
     <div *ngIf="!detaille" class="text-center p-4">
-        <p>Chargement des détails...</p>
-        <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
+      <p>Chargement des détails...</p>
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
-</div>
+  </div>
+  

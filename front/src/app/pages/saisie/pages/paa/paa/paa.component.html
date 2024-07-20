@@ -14,19 +14,39 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-auto">
-          <button
-            class="btn btn-sm btn-outline-success"
-            (click)="onFileInputClick()"
-          >
-            <i class="fas fa-upload"></i> Importer
-          </button>
-          <input
-            type="file"
-            #fileInput
-            style="display: none"
-            (change)="onFileSelected($event)"
-            accept=".xlsx, .xls"
-          />
+
+          <div class="col">
+
+            <div class="col">
+
+              <button
+                class="btn btn-sm btn-outline-success"
+                (click)="onFileInputClick()"
+              >
+                <i class="fas fa-upload"></i> Importer
+              </button>
+              <input
+                type="file"
+                #fileInput
+                style="display: none"
+                (change)="onFileSelected($event)"
+                accept=".xlsx, .xls"
+              />
+            </div>
+
+            <div class="exceltemplate col mt-3" >
+
+              <a style="color: rgb(9, 182, 9);cursor: pointer;" (click)="download('donnePaaxlsx.xlsx','excelTemplates')"> download template
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-excel" viewBox="0 0 16 16">
+                <path d="M5.884 6.68a.5.5 0 1 0-.768.64L7.349 10l-2.233 2.68a.5.5 0 0 0 .768.64L8 10.781l2.116 2.54a.5.5 0 0 0 .768-.641L8.651 10l2.233-2.68a.5.5 0 0 0-.768-.64L8 9.219l-2.116-2.54z"/>
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+              </svg>
+            </a>
+
+            </div>
+
+          </div>
+
         </div>
         <div class="col-auto">
           <button
@@ -123,6 +143,7 @@
               </div>
             </form>
           </div>
+          
 
           <div *ngIf="modifierRow" class="mt-2">
             <form
@@ -214,154 +235,138 @@
         [target]="targetElement"
         width="560px"
       >
-        <ng-template #content>
-          <div class="dialogContent">
-            <form
-              [formGroup]="validerFormDeclanchement"
-              (ngSubmit)="createProcedure()"
-              *ngIf="selectedPaa != null"
-            >
-              <div class="table-responsive">
-                <p class="text-center">
-                  <strong>
-                    Declanchement sur le PAA :
-                    {{ selectedPaa[0]["id"] }}</strong
-                  >
-                </p>
-                <div class="container text-center">
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span> Origin </span></div>
-                    <div class="col-8">
-                      <input
-                        formControlName="origine"
-                        type="text"
-                        placeholder="(Services demandeurs ou utilisateurs)"
-                        class="form-control text-center form-control-xs form-control-sm"
-                      />
-                    </div>
+      <ng-template #content>
+        <div class="dialogContent">
+          <form
+            [formGroup]="validerFormDeclanchement"
+            (ngSubmit)="createProcedure()"
+            *ngIf="selectedPaa != null"
+          >
+            <div class="table-responsive">
+              <p class="text-center">
+                <strong>
+                  Declanchement sur le PAA : {{ selectedPaa[0]["id"] }}
+                </strong>
+              </p>
+      
+              <div class="container text-center">
+                
+                <div class="row g-2 mt-2">
+                  <div class="col"><span> Origin </span></div>
+                  <div class="col-8">
+                    <input
+                      formControlName="origin"
+                      type="text"
+                      placeholder="(Services demandeurs ou utilisateurs)"
+                      class="form-control text-center form-control-xs form-control-sm"
+                    />
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span> Destinataire </span></div>
-                    <div class="col-8">
-                      <input
-                        formControlName="destinataire"
-                        type="text"
-                        placeholder="(Ordonnateur ou son délégataire de pouvoirs)"
-                        class="form-control text-center form-control-xs form-control-sm"
-                      />
-                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col"><span> Destinataire </span></div>
+                  <div class="col-8">
+                    <input
+                    disabled
+                      formControlName="destinataire"
+                      type="text"
+                      placeholder="(Ordonnateur ou son délégataire de pouvoirs)"
+                      class="form-control text-center form-control-xs form-control-sm"
+                    />
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span> Descriptif </span></div>
-                    <div class="col-8">
-                      <textarea
-                        disabled
-                        class="form-control text-left form-control-xs form-control-sm"
-                      >
-                        {{ selectedPaa[0]["objetDepense"] }}
-                      </textarea
-                      >
-                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col"><span> Description </span></div>
+                  <div class="col-8">
+                    <textarea
+                      formControlName="description"
+                      class="form-control text-left form-control-xs form-control-sm"
+                    >
+                    </textarea>
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span> Délai </span></div>
-                    <div class="col-4">
-                      <input
-                        type="text"
-                        disabled
-                        value="{{ selectedPaa[0]['datePreviAttribution'] }}"
-                        class="form-control form-control-xs form-control-sm"
-                      />
-                    </div>
-                    <div class="col-4">
-                      <input
-                        type="text"
-                        disabled
-                        value="{{ selectedPaa[0]['datePreviLancement'] }}"
-                        class="form-control form-control-xs form-control-sm"
-                      />
-                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col"><span> Délai </span></div>
+                  <div class="col-8">
+                    <input
+                      type="date"
+                      formControlName="deadlineEstime"
+                      class="form-control form-control-xs form-control-sm"
+                    />
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span>Source de financement </span></div>
-                    <div class="col-8">
-                      <input
-                        type="text"
-                        disabled
-                        value="{{ selectedPaa[0]['inpuBudgetaire'] }}"
-                        class="form-control text-center form-control-xs form-control-sm"
-                      />
-                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col"><span>Source de financement </span></div>
+                  <div class="col-8">
+                    <input
+                    disabled
+                      type="text"
+                      formControlName="sourceFinanciere"
+                      class="form-control text-center form-control-xs form-control-sm"
+                    />
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col"><span>Montant allouée </span></div>
-                    <div class="col-8">
-                      <input
-                        type="text"
-                        disabled
-                        value="{{ selectedPaa[0]['mntEstimatif'] }}"
-                        class="form-control text-center form-control-xs form-control-sm"
-                      />
-                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col"><span>Montant alloué </span></div>
+                  <div class="col-8">
+                    <input
+                      type="text"
+                      formControlName="montant"
+                      class="form-control text-center form-control-xs form-control-sm"
+                    />
                   </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col mt-2">
-                      <span>Expression de Besoin </span>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col mt-2">
+                    <span>Expression de Besoin </span>
+                  </div>
+                  <div class="col-8">
+                    <label class="btn btn-default">
+                      <input
+                        type="file"
+                        (change)="selectFile($event)"
+                        formControlName="file"
+                      />
+                    </label>
+                    <div *ngIf="message != ''" class="text-success text-center" role="alert">
+                      {{ message }}
                     </div>
-                    <div class="col-8">
-                      <label class="btn btn-default">
-                        <input
-                          type="file"
-                          (change)="selectFile($event)"
-                          formControlName="file"
-                        />
-                      </label>
+                    <div *ngIf="errorMsg != ''" class="text-red text-center" role="alert">
+                      {{ errorMsg }}
+                    </div>
+                    <div *ngIf="currentFile" class="progress">
                       <div
-                        *ngIf="message != ''"
-                        class="text-success text-center"
-                        role="alert"
+                        class="progress-bar progress-bar-info progress-bar-striped"
+                        role="progressbar"
+                        [attr.aria-valuenow]="progress"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        [ngStyle]="{ width: progress + '%' }"
                       >
-                        {{ message }}
+                        {{ progress }}%
                       </div>
-                      <div
-                        *ngIf="errorMsg != ''"
-                        class="text-red text-center"
-                        role="alert"
-                      >
-                        {{ errorMsg }}
-                      </div>
-                      <div *ngIf="currentFile" class="progress">
-                        <div
-                          class="progress-bar progress-bar-info progress-bar-striped"
-                          role="progressbar"
-                          attr.aria-valuenow="{{ progress }}"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          [ngStyle]="{ width: progress + '%' }"
-                        >
-                          {{ progress }}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row g-2 mt-2">
-                    <div class="col-10"></div>
-                    <div class="col-2">
-                      <button
-                        [disabled]="validerFormDeclanchement.invalid"
-                        class="btn btn-sm btn-success btn-block"
-                        type="submit"
-                      >
-                        Valider
-                      </button>
                     </div>
                   </div>
                 </div>
-                <br />
+                <div class="row g-2 mt-2">
+                  <div class="col-10"></div>
+                  <div class="col-2">
+                    <button
+                      [disabled]="validerFormDeclanchement.invalid"
+                      class="btn btn-sm btn-success btn-block"
+                      type="submit"
+                    >
+                      Valider
+                    </button>
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
-        </ng-template>
+              <br />
+            </div>
+          </form>
+        </div>
+      </ng-template>
+      
+      
       </ejs-dialog>
       
 
@@ -369,6 +374,7 @@
           <!--          <span *ngIf=" selectedPaa != null"> {{selectedPaa[0]['enprocedure'] | json}}</span>-->
 
           <div *ngIf="selectedPaa != null">
+            
             <button
               [hidden]="selectedPaa[0]['enprocedure']"
               *ngIf="selectedPaa[0]['isvalidated'] === true"
@@ -424,7 +430,7 @@
               Detaille
             </button>
 
-            <button
+            <!-- <button
               (click)="CreationDossier($event)"
               *ngIf="selectedPaa != null"
               [hidden]="
@@ -438,9 +444,9 @@
             >
               <span class="fas fa-folder-plus"></span>
               Creer un dossier
-            </button>
+            </button> -->
             <!--            [hidden]="!data.enprocedure"-->
-            <button
+            <!-- <button
               [hidden]="selectedPaa[0]['enprocedure'] === false"
               *ngIf="selectedPaa != null"
               (click)="imprimer(selectedPaa[0]['id'], REPORTS.initiation)"
@@ -459,7 +465,7 @@
             >
               <span class="fas fa-eye"></span>
               Detail
-            </button>
+            </button> -->
             <!-- <button *ngIf="selectedPaa && !selectedPaa[0].enprocedure"
         (click)="supprimerPaa(selectedPaa[0].id)"
         class="btn btn-sm btn-outline-danger"
@@ -708,110 +714,49 @@
               height="350"
               gridLines="Both"
               [pageSettings]="pageSettings"
-              allowGrouping="true"
-              [groupSettings]="{ columns: ['etablissement.nom'] }"
-              (dataBound)="onDataBound()"
+              
             >
               <e-columns>
                 <e-column
                   field="etablissement.nom"
-                  headerText="Plan annuel de "
-                  textAlign="Center"
+                  headerText="Plans annuels d'achat"
+                  textAlign="Start"
                   width="150"
                 >
-                  <ng-template #template let-data>
-                    {{ data.etablissement?.nom }}
+                  <ng-template #template let-data class="grid" >
+
+                    <div class="row">
+                      <div class="col-2" >
+
+                        Plan annuel de : {{ data.etablissement?.nom }}
+                      </div>
+  
+                      <div class="col" >
+                        <strong
+                        *ngIf="data.etat=='ACTUALISE'"
+                          style="color: rgb(152, 231, 34)"
+                          > actualisé   <small   style="color: rgb(32, 51, 3);margin-left: 20px;" >{{ data.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</small>
+                        </strong>
+                        <strong
+                        *ngIf="data.etat=='INITIALE'"
+                          style="color: rgb(19, 160, 235)"
+                          > initial 
+                        </strong>
+                       
+  
+                      </div>
+                    </div>
+           
                   </ng-template>
                 </e-column>
 
-                <e-column
-                  field="id"
-                  headerText="Code"
-                  textAlign="Center"
-                  width="50"
-                >
-                  <ng-template #template let-data>
-                    {{ data.id }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="inpuBudgetaire"
-                  headerText="Inputation"
-                  textAlign="Center"
-                  width="100"
-                >
-                  <ng-template #template let-data>
-                    {{ data.inpuBudgetaire }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="typeMarche"
-                  headerText="Type de contrat"
-                  textAlign="Center"
-                  width="100"
-                >
-                  <ng-template #template let-data>
-                    {{ data.typeMarche.typeMarche }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="modPassation"
-                  headerText="Type de selection"
-                  textAlign="Center"
-                  width="100"
-                >
-                  <ng-template #template let-data>
-                    {{ data.modPassation.modePassation }}
-                  </ng-template>
-                </e-column>
+                
+                
 
-                <e-column
-                  field="objetDepense"
-                  headerText="Objet Depense"
-                  textAlign="Center"
-                  width="120"
-                >
-                  <ng-template #template let-data>
-                    {{ data.objetDepense }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="datePreviAttribution"
-                  headerText="Date previe d'attribution"
-                  textAlign="Center"
-                  width="120"
-                >
-                  <ng-template #template let-data>
-                    {{ data.datePreviAttribution }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="datePreviLancement"
-                  headerText="Date previe de lancement"
-                  textAlign="Center"
-                  width="120"
-                >
-                  <ng-template #template let-data>
-                    {{ data.datePreviLancement }}
-                  </ng-template>
-                </e-column>
-                <e-column
-                  field="Etat"
-                  headerText="Etat"
-                  textAlign="Center"
-                  width="120"
-                >
-                  <ng-template #template let-data>
-                    <strong
-                      *ngIf="data.isvalidated"
-                      style="color: rgb(152, 231, 34)"
-                      >validé</strong
-                    >
-                    <strong *ngIf="!data.isvalidated" style="color: red"
-                      >non validé</strong
-                    >
-                  </ng-template>
-                </e-column>
+                
+
+
+                
               </e-columns>
             </ejs-grid>
           </div>

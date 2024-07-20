@@ -44,12 +44,18 @@ export class PaaComponent implements OnInit {
   GED_TBL = GED_TBL;
   REPORTS = REPORTS;
   data: any;
+  prenom = localStorage.getItem("prenom");
+  nom = localStorage.getItem("username");
   selectedPaa: Object[] = null;
   errorMsg = '';
   showNewRow: boolean = false;
   modifierRow: boolean = false;
   newRowForm: FormGroup;
   modifierForm: FormGroup;
+  validerFormDeclanchement: FormGroup;
+
+  headerText: String = "Plan annuel de ";
+
   selectedFiles: FileList;
   currentFile: File;
   progress = 0;
@@ -76,6 +82,7 @@ export class PaaComponent implements OnInit {
     private procedurePaaService: ProcedurePaaService,
     private http: HttpClient
   ) {
+
     this.pageSettings = { pageSize: 10 };
     this.myDateYear = this.datePipe.transform(this.myDateYear, 'yyyy');
     this.newRowForm = this.fb.group({
@@ -94,11 +101,24 @@ export class PaaComponent implements OnInit {
       datePreviLancement: ['', Validators.required],
       datePreviAttribution: ['', Validators.required]
     });
+
+
+    this.validerFormDeclanchement = this.fb.group({
+      file:["",Validators.required],
+      origin: ["", Validators.required],
+      destinataire: ["", Validators.required],
+      description: ["", Validators.required],
+      deadlineEstime: ["", Validators.required],
+      sourceFinanciere: ["", Validators.required],
+      montant: ["", Validators.required],
+    });
+
+ 
+
   }
 
   ngOnInit(): void {
     this.getPaa();
-    this.initFormDeclanchement();
     this.initFormCreateDir();
     this.fileInfos = this.fileService.getFiles();
     this.loadEtablissements();
@@ -108,7 +128,7 @@ export class PaaComponent implements OnInit {
   @ViewChild(EtablissementSelectComponent) etablisementSelect: EtablissementSelectComponent;
 
   toggleOffcanvas(id: any) {
-    this.offcanvas.toggleOffcanvas();
+    this.offcanvas.toggleOffcanvas("PAA");
     console.log("l'id du paa : " + id);
     this.offcanvas.detaillePaa(id);
   }
@@ -121,14 +141,13 @@ export class PaaComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      this.paaService.uploadFile(file).subscribe(
-        response => {
-          this.message = 'File uploaded successfully!';
+      this.paaService.uploadFile(file).subscribe({
+        next: () => {
           this.getPaa();
-        },
-        error => {
-          this.message = 'Failed to upload file: ' + error;
         }
+      }
+      
+        
       );
     } else {
       this.message = 'Please select a file first.';
@@ -138,6 +157,9 @@ export class PaaComponent implements OnInit {
   onDataBound() {
     this.grid.groupModule.collapseAll();
   }
+
+  
+  
 
   selectFile(event) {
     this.selectedFiles = event.target.files;
@@ -163,7 +185,7 @@ export class PaaComponent implements OnInit {
             this.btnValider = true;
             this.currentFile = null;
             if (gedTbl === GED_TBL.EXPRESSION_BESOIN) {
-              this.btnValiderDeclanchement();
+              // this.btnValiderDeclanchement();
             } else {
               this.formCreationDir.reset();
               this.dialogDossier.hide();
@@ -180,27 +202,30 @@ export class PaaComponent implements OnInit {
       });
   }
 
-  btnValiderDeclanchement() {
-    Object.assign(this.validerFormDeclanchement.value, { id: this.selectedPaa[0]['id'] });
-    this.paaService.declancchementPost(this.validerFormDeclanchement.value).subscribe({
-      next: (value) => {
-        console.log(value);
-        this.getPaa();
-        this.ejDialog.hide();
-      },
-      error: (error) => {
-        console.log(error);
-      },
-      complete: () => {
-        this.validerFormDeclanchement.reset();
-      }
-    });
-  }
+  // btnValiderDeclanchement() {
+  //   Object.assign(this.validerFormDeclanchement.value, { id: this.selectedPaa[0]['id'] });
+  //   this.paaService.declancchementPost(this.validerFormDeclanchement.value).subscribe({
+  //     next: (value) => {
+  //       console.log(value);
+  //       this.getPaa();
+  //       this.ejDialog.hide();
+  //     },
+  //     error: (error) => {
+  //       console.log(error);
+  //     },
+  //     complete: () => {
+  //       this.validerFormDeclanchement.reset();
+  //     }
+  //   });
+  // }
 
   getPaa() {
-    const res = this.paaService.getPaa().subscribe({
+   this.paaService.getPaa().subscribe({
       next: (value) => {
-        console.log(value);
+       
+        console.log("paa : "+JSON.stringify(value));
+        
+
         this.data = value;
       },
       error: (e) => {
@@ -213,7 +238,7 @@ export class PaaComponent implements OnInit {
     if (item) {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-      this.http.get(`http://localhost:8089/api/rest/Paa/${item.id}`, { headers }).subscribe({
+      this.http.get(`http://localhost:8081/api/rest/Paa/etablissement/${item.id}`, { headers }).subscribe({
         next: (value) => {
           this.data = value;
         },
@@ -242,17 +267,20 @@ export class PaaComponent implements OnInit {
     });
   }
 
-  private cancelClick(): void {
-    this.DialogObj.hide();
-    this.validerFormDeclanchement.reset();
-    this.dialogDossierObj.hide();
-    this.dialogDossierDetail.hide();
-  }
+  // private cancelClick(): void {
+  //   this.DialogObj.hide();
+  //   this.validerFormDeclanchement.reset();
+  //   this.dialogDossierObj.hide();
+  //   this.dialogDossierDetail.hide();
+  // }
 
   public declancherProcedure = (event: any): void => {
     this.btnValider = false;
     this.cpass = true;
     this.ejDialog.show();
+
+    this.validerFormDeclanchement.get("destinataire").patchValue(this.nom)
+    this.validerFormDeclanchement.get("sourceFinanciere").patchValue(this.selectedPaa[0]['inpuBudgetaire'])
   };
 
   public declancherDetail = (event: any): void => {
@@ -302,15 +330,7 @@ export class PaaComponent implements OnInit {
     console.log(this.selectedPaa);
   }
 
-  validerFormDeclanchement: FormGroup;
-
-  initFormDeclanchement() {
-    this.validerFormDeclanchement = this.fb.group({
-      file: [null, Validators.required],
-      origine: [null, Validators.required],
-      destinataire: [null, Validators.required],
-    });
-  }
+ 
 
   imprimer(id, idTbl) {
     this.paaService.telechargerPieceJointe(id, idTbl).subscribe((value: Blob) => {
@@ -435,33 +455,23 @@ export class PaaComponent implements OnInit {
 
   createProcedure() {
     if (this.validerFormDeclanchement.valid) {
-      const file = this.selectedFiles ? this.selectedFiles[0] : null;
-      const pathBesoin = file ? `"C:\\Users\\JELIL\\Desktop\\stage_project\\uploads\\procedures\\besoins\\${file.name}` : null;
-      const pathInitialProcedure = file ? `C:\\Users\\JELIL\\Desktop\\stage_project\\uploads\\procedures\\report_${this.selectedPaa[0]['id']}.pdf` : null;
-
-      const procedureData: ProcedurePaa = {
-        id: null,
-        deadlineEstime: null,
-        description: this.selectedPaa[0]['objetDepense'],
-        montant: this.selectedPaa[0]['mntEstimatif'],
-        origin: this.validerFormDeclanchement.value.origine,
-        destinataire: this.validerFormDeclanchement.value.destinataire,
-        pathBesoin: pathBesoin,
-        pathInitialProcedure: pathInitialProcedure,
-        sourceFinanciere: this.selectedPaa[0]['inpuBudgetaire'],
-        paa: { id: this.selectedPaa[0]['id'] }
+      const file = this.selectedFiles[0];
+      const procedureData = {
+        paa: {id: this.selectedPaa[0]['id']},
+        origin:this.validerFormDeclanchement.get("origin").value,
+        destinataire:this.validerFormDeclanchement.get("destinataire").value,
+        description:this.validerFormDeclanchement.get("description").value,
+        deadlineEstime:this.validerFormDeclanchement.get("deadlineEstime").value,
+        sourceFinanciere:this.validerFormDeclanchement.get("sourceFinanciere").value,
+        montant:this.validerFormDeclanchement.get("montant").value
+      
       };
-      console.log(procedureData);
+      console.log("l'id du paa : "+this.validerFormDeclanchement.get("origin").value);
 
       if (file) {
         this.procedurePaaService.createProcedure(procedureData, file).subscribe({
-          next: (value) => {
-            console.log('Procedure created successfully', value);
-            this.getPaa();
+          next: () => {
             this.ejDialog.hide();
-          },
-          error: (error) => {
-            console.error('Failed to create procedure', error);
           }
         });
       } else {
@@ -470,6 +480,27 @@ export class PaaComponent implements OnInit {
     } else {
       console.error('Form is invalid');
     }
+
+    // console.log("la valeur du formulaire : "+this.validerFormDeclanchement.get("origin").value);
+    
+  }
+
+  download(filePath: any,dossier:any): void {
+    this.procedurePaaService.downloadFile(filePath,dossier).subscribe(
+      (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filePath.split('/').pop() || 'download';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error => {
+        console.error('File download error:', error);
+      }
+    );
   }
 
 }

@@ -13,6 +13,6 @@ export class UsersService {
   constructor(private http: HttpClient, private route: Router) { }
 
   getAll(): Observable<Users[]> {
-    return this.http.get<Users[]>(SERVER_URL_BE + '/users/').pipe();
+    return this.http.get<Users[]>(SERVER_URL_BE + 'users').pipe();
   }
 }

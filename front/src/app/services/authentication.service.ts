@@ -10,7 +10,7 @@ import {genEnp,host2} from "../../environments/environment-local";
   providedIn: 'root'
 })
 export class AuthenticationService implements OnInit {
-  host2:string="http://localhost:8089";
+  host2:string="http://localhost:8081/auth";
   jwt: any;
   userId: any;
   username:any;
@@ -26,7 +26,13 @@ export class AuthenticationService implements OnInit {
   }
 
   login(data:any){
-    return this.http.post(this.host2+"/login",data,{observe:'response'})
+    return this.http.post(this.host2+"/login",data)
+  }
+
+  GetUserRoles(id: any) {
+    return this.http.get(`http://localhost:8081/users/roles/${id}`)
+
+    
   }
 
 
@@ -50,7 +56,7 @@ export class AuthenticationService implements OnInit {
   }
 
   getAllUsers(): Observable<any>{
-    return  this.http.get(this.host2+'/api/rest/AppRigister/getAllUsers/').pipe();
+    return  this.http.get("http://localhost:8081/users").pipe();
   }
   getAllRoles(): Observable<any>{
     return  this.http.get(this.host2+'/api/rest/AppRigister/getAllRoles/').pipe();
@@ -79,7 +85,7 @@ export class AuthenticationService implements OnInit {
     
   }
   isAdmin(){
-    return this.roles.indexOf('ADMINISTRATEUR')>=0;
+    return true;
     // return this.roles.indexOf('SAISIE')>=0;
     // return this.roles.indexOf('CONSULTATION')>=0;
     // return this.roles.indexOf('VALIDATION')>=0;

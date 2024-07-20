@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { ProcedurePaa } from '../models/procedure.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProcedurePaaService {
-  private apiUrl = 'http://localhost:8089/api/rest/procedure';
+  private apiUrl = 'http://localhost:8081/api/rest/procedure';
 
   constructor(private http: HttpClient) {}
 
@@ -26,13 +26,14 @@ export class ProcedurePaaService {
     );
   }
 
-  createProcedure(procedure: ProcedurePaa, file: File): Observable<ProcedurePaa> {
+  createProcedure(procedure: any, file: File): Observable<ProcedurePaa> {
+    
     return this.saveProcedure('POST', this.apiUrl, procedure, file);
   }
 
-  updateProcedure(id: number, procedure: ProcedurePaa, file: File): Observable<ProcedurePaa> {
-    return this.saveProcedure('PUT', `${this.apiUrl}/${id}`, procedure, file);
-  }
+  // updateProcedure(id: number, procedure: ProcedurePaa, file: File): Observable<ProcedurePaa> {
+  //   return this.saveProcedure('PUT', `${this.apiUrl}/${id}`, procedure, file);
+  // }
 
   deleteProcedure(id: number): Observable<any> {
     const headers = this.getHeaders();
@@ -40,6 +41,44 @@ export class ProcedurePaaService {
       catchError(this.handleError)
     );
   }
+
+  // downloadFile(path: string): Observable<any>  {
+  //   var newpath = path.replace('\\', "/");
+  //   const url = `http://localhost:8089/api/rest/procedure/download?path=${newpath}`;
+  //   const headers = this.getHeaders();
+
+  //   return this.http.get(url,{headers} ).pipe(
+  //     catchError(this.handleError)
+  //   );
+      
+  // }
+
+  // downloadFile(filePath: any): Observable<HttpResponse<Blob>> {
+  //   const headers = this.getHeaders();
+
+  //   return this.http.get(`http://localhost:8081/api/rest/procedure/download?file=${encodeURIComponent(filePath)}`, {
+  //     headers: headers,
+  //     observe: 'response',
+  //     responseType: 'blob'
+  //   });
+  // }
+
+  downloadFile(filePath: string,dossier:any): Observable<Blob> {
+    const options = {
+      responseType: 'blob' as 'json',
+      headers: this.getHeaders()
+    };
+
+    return this.http.get(`http://localhost:8081/api/rest/procedure/download?file=${filePath}&dossier=${dossier}`, options).pipe(
+      map((res: any) => {
+        return new Blob([res], { type: res.type });
+      })
+    );
+  }
+
+
+
+  
 
   private saveProcedure(method: 'POST' | 'PUT', url: string, procedure: ProcedurePaa, file: File): Observable<ProcedurePaa> {
     const formData = new FormData();

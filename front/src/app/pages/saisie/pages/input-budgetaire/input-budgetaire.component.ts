@@ -67,7 +67,7 @@ export class InputBudgetaireComponent implements OnInit {
         .set('typeMarcherid', formValues.typeMarcherid)
         .set('etablissementId', formValues.etablissementId);
 
-      this.http.post('http://localhost:8089/api/rest/input', body.toString(), {
+      this.http.post('http://localhost:8081/api/rest/input', body.toString(), {
         headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded').set('Authorization', `Bearer ${token}`)
       }).subscribe(response => {
         this.validerFormDeclanchement.reset();
@@ -102,7 +102,7 @@ export class InputBudgetaireComponent implements OnInit {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
       const id = this.inputSelected.id;
-      this.http.delete(`http://localhost:8089/api/rest/input/${id}`, { headers }).subscribe(response => {
+      this.http.delete(`http://localhost:8081/api/rest/input/${id}`, { headers }).subscribe(response => {
         console.log('Donnée supprimée avec succès', response);
         this.getInputs();  // Rafraîchir les données après suppression
         this.inputSelected = null; // Réinitialiser la sélection
@@ -135,7 +135,7 @@ export class InputBudgetaireComponent implements OnInit {
       next: (value) => {
         this.contrats = value.map((item: any) => ({
           ...item,
-          typeMarche: item.typeMarche
+          typeMarche: item.nom
         }));
       }
     });
@@ -146,7 +146,7 @@ export class InputBudgetaireComponent implements OnInit {
       next: (value) => {
         this.modes = value.map((item: any) => ({
           ...item,
-          typemode: item.modePassation
+          typemode: item.nom
         }));
         console.log(value);
       }
